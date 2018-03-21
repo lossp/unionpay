@@ -1,0 +1,24 @@
+{
+  "name": "unionpaysdk",
+  "version": "1.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "lossp",
+  "license": "ISC",
+  "dependencies": {
+    "big-integer": "^1.6.26",
+    "iconv": "^2.3.0",
+    "moment": "^2.20.1",
+    "request": "^2.83.0",
+    "wopenssl": "^0.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.9.0"
+  }
+}
