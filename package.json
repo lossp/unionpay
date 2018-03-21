@@ -6,7 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "Node.js",
+    "Unionpay"
+  ],
+  "homepage": "https://github.com/lossp/unionpay",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lossp/unionpay.git"
+  },
   "author": "lossp",
   "license": "ISC",
   "dependencies": {
@@ -20,10 +28,5 @@
     "eslint": "^4.19.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.9.0"
-  },
-  "homepage": "https://github.com/lossp/unionpay",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/lossp/unionpay.git"
-  },
+  }
 }
