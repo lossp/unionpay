@@ -1,4 +1,12 @@
 # UnionPay支付文档
+
+基本使用方式如下
+```
+const Unionpay = require('unionpaysdk')
+// 其中传入的为每个用户的配置参数，具体请参照根目录下的test.js
+const newPay = new Unionpay(config)
+```
+
 ------------------------------
 ##商户的申请
 在银联网站的开放平台上申请成功之后，首先在银联的网站中下载相应的商户私钥证书，下载的证书均为5.1.0的版本。格式为.pfx。
@@ -72,5 +80,7 @@
 证书统一放置在根目录下的```certificates```下，如果有改动，请修改```/lib/unionpay.js```下的```privateKey```的配置目录，以及```/lib/verify.js```下的```publicKey```的配置目录。
 其余信息，比如```merId```，```cerId```等配置在根目录的```config```文件夹中的```config.js```文件下。
 目前仅仅完善了支付，查询，回调验证功能，以后还会完善退款功能
+
+
 
 

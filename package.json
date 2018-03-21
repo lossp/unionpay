@@ -1,7 +1,6 @@
 {
   "name": "unionpaysdk",
   "version": "1.0.2",
-  "homepage": "https://github.com/lossp/unionpay/tree/master",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,5 +20,9 @@
     "eslint": "^4.19.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.9.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lossp/unionpay"
+  },
 }
