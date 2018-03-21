@@ -77,9 +77,7 @@ const newPay = new Unionpay(config)
 
 
 #其余信息(证书配置，公共信息配置)
-证书统一放置在根目录下的```certificates```下，如果有改动，请修改```/lib/unionpay.js```下的```privateKey```的配置目录，以及```/lib/verify.js```下的```publicKey```的配置目录。
-其余信息，比如```merId```，```cerId```等配置在根目录的```config```文件夹中的```config.js```文件下。
-目前仅仅完善了支付，查询，回调验证功能，以后还会完善退款功能
+公共配置信息当作一个参数传入构造函数中去，也就```new Unionpay()```中，具体需要的信息请见根目录下的```test.js```。
 
 
 
