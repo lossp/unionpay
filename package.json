@@ -1,6 +1,7 @@
 {
   "name": "unionpaysdk",
   "version": "1.0.1",
+  "homepage": "https://github.com/lossp/unionpay/tree/master",
   "description": "",
   "main": "index.js",
   "scripts": {
