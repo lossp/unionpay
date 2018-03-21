@@ -21,8 +21,5 @@
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.9.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/lossp/unionpay"
-  },
+  "homepage": "https://github.com/lossp/unionpay"
 }
