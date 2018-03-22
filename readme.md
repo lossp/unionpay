@@ -1,83 +1,85 @@
-# UnionPay支付文档
+# UnionPay B2B 支付，查询，验证文档
 
-基本使用方式如下
+首先而言，这是针对银联B2B支付的SDK，PC端的B2B支付 !!
+重要提醒，目前只完善了支付，查询以及验证，还未完善退款功能，以后会补上
+针对于PC端，B2B支付，CNY，这些参数在Unionpay.js中已经定死了，如果需要修改，可以自行修改
+由于银联官方问题，对于证书，需要下载的是5.0.0版本的证书，但是验证却是5.1.0的方法，这里很尴尬，如有懂的，请告诉下，非常感谢。
+以下为简单教程
+第一步，首先去银联网站下载相关证书，目前需要的是5.0.0的证书，请勿下载错误。
+第二步如下
 ```
-const Unionpay = require('unionpaysdk')
-// 其中传入的为每个用户的配置参数，具体请参照根目录下的test.js
-const newPay = new Unionpay(config)
+// 1.首先引入包
+const Unionpay = require('unionpaysdk');
+
+// 2.其次配置相关参数 此配置均为测试环境，正式环境需要将.test去掉
+const config = {
+  frontUrl: 'http://localhost:8081/upacp_demo_b2b/demo/api_02_b2b/FrontReceive.php', // 前台通知地址，前台返回商户结果时使用，例：https://xxx.xxx.com/xxx
+  backUrl: 'http://x222.222.222.222:8080/upacp_demo_b2b/demo/api_02_b2b/BackReceive.php', // 后台通知地址
+  frontTransUrl: 'https://gateway.test.95516.com/gateway/api/frontTransReq.do', // 前台交易请求地址
+  appTransUrl: 'https://gateway.test.95516.com/gateway/api/appTransReq.do', // APP交易请求地址
+  backTransUrl: 'https://gateway.test.95516.com/gateway/api/backTransReq.do', // 后台交易请求地址
+  cardTransUrl: 'https://gateway.test.95516.com/gateway/api/cardTransReq.do', // 后台交易请求地址(若为有卡交易配置该地址)：
+  queryTransUrl: 'https://gateway.test.95516.com/gateway/api/queryTrans.do', // 单笔查询请求地址
+  batchTransUrl: 'https://gateway.test.95516.com/gateway/api/batchTrans.do', // 批量查询请求地址
+  TransUrl: 'https://filedownload.test.95516.com/', // 文件传输类交易地址
+  merId: 'xxxxxxxxxx', // 测试商户号，已被批准加入银联互联网系统的商户代码
+};
+
+// 3.将证书进行解析，先实例化Unionpay
+let parser = new Unionpay();
+
+// 4.将.pfx的相对路径以及密码当作参数传入函数中，获取到解析结果result，里面包含privateKey以及certificate，将其提取出来
+const path = 'xxxxxxx/xxx/xx'
+const password = 'xxxxxx'
+const result = parser.parseSignedDataFromPfx(path, password);
+const { privateKey } = result;
+const { certificate } = result; 
+
+// 4.解析certificate，获取到相应的certId
+const certId = parser.parseCertData(certificate);
+
+// 5.将解析出来的参数添加至config里面，当作公共参数去实例化Unionpay
+config.certId = certId;
+config.privateKey = privateKey;
+config.publicKey = certificate;
+// 如果要改成正式环境，只需要将test去掉即可
+config.frontReqUrl = 'https://gateway.test.95516.com/gateway/api/frontTransReq.do';
+
+// 6.实例化Unionpay
+const unionpay = new Unionpay(config);
+
+// 7.然后设置相应参数，比如金额和订单号，就可以生成相应订单
+// 订单参数设置
+const orderId = '12313131';
+const txnAmtValue = '1000';
+// 其中options为附近信息，比如商品描述等，但是传入进reqReserved中的必须为字符串，并且长度有限定，此处只做大致演示
+const options = 'xxzcz';
+const result = unionpay.buildPayment(orderId, txnAmtValue, options);
+// 回来的result为html格式的文档，打开之后会自动跳转到支付页面，即支付成功
+console.log(result);
+```
+查询功能的话，直接调用query就可以
+
+```
+const unionpay = new Unionpay();
+// 商户订单号
+const orderId = '122231313' ;
+// 订单提交到银联的时间
+const txnTime = '2018-09-23 09:23:23'
+const queryResult = unionpay.query(orderId, txnTime)
+// 获取到的queryResult为JSON对象，里面有支付具体信息，根据业务具体进行解析
+
 ```
 
-------------------------------
-##商户的申请
-在银联网站的开放平台上申请成功之后，首先在银联的网站中下载相应的商户私钥证书，下载的证书均为5.1.0的版本。格式为.pfx。
-###公共参数
-目前所需要的公告参数，指的是从银联网站上获取的参数，如下
-* 商户私钥证书.pfx
-* 证书的ID，cerId，具体从银联提供的SDK中获取，目前利用的是银联提供的php版本的SDK中，通过读取商户私钥证书来获取相应的certId。注意！此处的certId和merId不是同一个东西，certId必须从.pfx中解析得到。目前可以在NodeJs版本的SDK中解析成功，利用```wopenssl```从.pfx中获取到的```serialNumber```就是未解析的```certId```，通过利用大整数方式(Big Integer)方式可以将其解析出来，即可获取响应的```certId```
-
-###证书格式转换(.pfx --> .pem)
-证书格式的转换通过SDK中提供的convert方法来执行，具体位置在根目录util文件下。
-##银联证书
-###私钥证书解析
-在证书解析之前，需要将.pfx转化为.pem格式，在通过银联提供的SDK解析的时候，.pem文件里的加密部分是以```-----BEGIN PRIVATE KEY-----```开始，以```-----END PRIVATE KEY-----```结束。但是利用目前提供的iterm2命令行以及第三方工具(wopenssl)转换的.pem是以```-----BEGIN RSA PRIVATE KEY-----```开始，以```-----END RSA PRIVATE KEY-----```结束。其中加密部分也与银联SDK解析出来的部分不同，开始以为这两种不同的私钥通过同一种生成签名算法会生成不一样的签名，但是结果生成的签名一致，也许银联SDK和目前nodejs的SDK在解析.pfx时候，虽然利用的解析方法相同，这里的解析方法指的是pkcs12，但是解析程度不同，如果你知道，请告知一下，谢谢。解析完成之后，获取到privateKey。
-##参数
-所有参数的格式均为字符串，参数是以```x-www-form-urlencoded```形式发送至银联
-具体需求参数如下
->version 版本号  (分为5.0.0以及5.1.0,目前均采用5.0.0)
->encoding 编码形式(只能小写)
->txnType 交易类型(默认采用01,其它方式请查询银联开发文档)
->txnSubType 交易子类型(默认采用01,其它方式请查询银联开发文档)
->bizType 业务类型(默认为000202)
->frontUrl 前台通知地址 (即交易成功之后跳转的商户地址)
->backUrl 后台通知地址
->signMethod 签名方法(默认为01)
->channelType 渠道类型(07-PC 08-手机)
->accessType 接入类型(默认为0)
->currencyCode 交易货币种类(境内商户固定为156，为人民币)
->merId 商户代码(请从银联开发文档中获取相关的ID)
->orderId 商户订单号(8-32位数字字母，不能含“-”或“_”,至少为8位，否则提交订单时会报错)
->txnTime 订单发送时间 (并不是订单在商城中创建的时间，应是目前发送至银联时的当前时间)
->txnAmt 交易金额，单位为分
->payTimeout 交易超时时间(超过超时时间调查询接口应答origRespCode不是A6或者00的就可以判断为失败)
->certId 证书ID(由于其解析算法还未实现，因此cerId仍然是从银联SDK中获取)
->signature 签名字符串(具体方式参见util目录下的buildParams签名生成部分)
-
-当所有的参数发送至目标url之后，会跳转至银联的支付页面，之后完成支付
+签名验证，确认信息是银联返回过来的
+```
+// 回调数据部分的验签，调用verify方式即可
+// params为银联返回过来的数据，通过后台通知地址获取信息
+unionpay.verifyCallback(params)
+```
 
 
-###时间形式
-要发送过去的时间格式必须为```20180302165718```，这样的YYYYMMDDHHmmss形式。禁止其它格式的时间发送。
-###发送至远端
-调用SDK中的buildParams方式，这种方式接受orderId，txnAmt，channelType, frontUrl这几个参数，此方法会返回一个json对象，里面包含所有必要信息，只需要将json对象通过表单的形式推送至银联的支付端口，即可生成相应的订单以及收款。然后再完成支付即可。
-#UnionPay查询文档
-##查询订单所需参数
-调用SDK中query方法，传入的参数为orderId以及txnTime，其中会获取到银联端口传回来的数据，数据封装在了SDK中，首先将数据整理后，转换成用&连接的参数字符串，然后发送给银联相应端口，之后获取，解析其中是否支付成功，再进行签名验证步骤。
-
-发送字符串过去时，银联返回回来的是json对象，验证回调签名的时候，返回的是Boolean值。
-
-发送的参数具体如下
-> version 
-> encoding
-> signMethod
-> txnType 固定为00，我也不知道为什么 问银联
-> txnSubType 固定为00，我也不知道为什么 问银联
-> bizType   固定为000000，我也不知道为什么 问银联
-> accessType 
-> channelType
-> orderId
-> merId
-> txnTime
-> certId
-> signature
-
-在生产字符串的时候严格按照sort()排列方法来对key值进行排列。用&符号来连接，其中具体排列方法在SDK中的utilities中。
-
-#Unionpay签名回调验证文档
-通过获取银联返回过来的json对象，将签名字符串提取出来，然后通过```filter```方法对参数进行处理，将一些空的参数去除掉，之后生成用```&```符号连接的参数字符串。然后进行签名的生成，调用```crypto```中的```verify```方式和银联的公钥进行匹配，算法均为```sha256```
-
-
-#其余信息(证书配置，公共信息配置)
-公共配置信息当作一个参数传入构造函数中去，也就```new Unionpay()```中，具体需要的信息请见根目录下的```test.js```。
+退款功能还未完善，请大家多多谅解，谢谢支持
 
 
 
